@@ -1,3 +1,4 @@
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -63,13 +64,15 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
-		mousePressed=!mousePressed;
+		Component comp=(Component)e.getComponent();
+		if(comp.getName()=="MainLabel" && secondParamActivate)mousePressed=true;
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
-		mousePressed=false;
+		Component comp=(Component)e.getComponent();
+		if(comp.getName()=="MainLabel" && secondParamActivate)mousePressed=false;
 	}
 
 	@Override
@@ -168,7 +171,24 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
 		// TODO Auto-generated method stub
-		
+		if(secondParamActivate)
+		{
+			if(image==null)return;
+			int posX=arg0.getX();
+			int posY=arg0.getY();
+			if(posX<image.getWidth() && posY<image.getHeight())
+			{
+				displayLabel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+				if(mousePressed)
+				{
+					System.out.println(arg0.getX()+"-"+arg0.getY());
+				}
+			}
+			else
+			{
+				displayLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+		}
 	}
 	@Override
 	public void mouseMoved(MouseEvent arg0) {
@@ -180,10 +200,11 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 			int posY=arg0.getY();
 			if(posX<image.getWidth() && posY<image.getHeight())
 			{
-				if(mousePressed)
-				{
-					System.out.println(arg0.getX()+"-"+arg0.getY());					
-				}
+				displayLabel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+			}
+			else
+			{
+				displayLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		}
 	}

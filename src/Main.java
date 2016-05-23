@@ -51,7 +51,9 @@ public class Main
 		GUIHandler gui=new GUIHandler(frame);
 		try
 		{
-			JLabel displayLabel=new JLabel();gui.setDisplayLabel(displayLabel);displayLabel.addMouseListener(gui);displayLabel.addMouseMotionListener(gui);
+			JLabel displayLabel=new JLabel();gui.setDisplayLabel(displayLabel);
+			displayLabel.setName("MainLabel");
+			displayLabel.addMouseListener(gui);displayLabel.addMouseMotionListener(gui);
 			JPanel paramPanel=new JPanel();
 			JScrollPane scrollDisplay=new JScrollPane(displayLabel);
 			JScrollPane scrollParam=new JScrollPane(paramPanel);
