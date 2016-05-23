@@ -1,7 +1,9 @@
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -13,6 +15,8 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
@@ -20,13 +24,15 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.opencv.core.Mat;
 
-public class GUIHandler implements MouseListener,ChangeListener,ActionListener
+public class GUIHandler implements MouseListener,MouseMotionListener, ChangeListener,ActionListener
 {
 	public boolean Clicked=false;
 	public BufferedImage image;
 	private JFileChooser dlg;
 	private JFrame mainFrame;
 	private JLabel displayLabel;
+	private boolean secondParamActivate=false;
+	private boolean mousePressed=false;
 	
 	public GUIHandler(JFrame frame)
 	{
@@ -57,22 +63,30 @@ public class GUIHandler implements MouseListener,ChangeListener,ActionListener
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+		mousePressed=!mousePressed;
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+		mousePressed=false;
 	}
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		// TODO Auto-generated method stub
 		JCheckBox chk=(JCheckBox)e.getSource();
-		if(chk.getName()=="mirrorCheck")
+		if(chk.getName()=="ActiverFiltre")
 		{
-			
+			secondParamActivate=!secondParamActivate;
+			if(secondParamActivate)
+			{
+				displayLabel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+			}
+			else
+			{
+				displayLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}			
 		}
 	}
 
@@ -97,6 +111,10 @@ public class GUIHandler implements MouseListener,ChangeListener,ActionListener
 				System.err.println("Erreur lors de la cam");
 			}
 		}
+		if(btn.getName()=="AppliquerFiltre")
+		{
+			
+		}
 		if(btn.getName()=="Enregistrer")
 		{
 			saveImage();
@@ -115,6 +133,7 @@ public class GUIHandler implements MouseListener,ChangeListener,ActionListener
 				File f=dlg.getSelectedFile();
 				image=ImageIO.read(f);
 				displayLabel.setIcon(new ImageIcon(image));
+				displayLabel.setVerticalAlignment(SwingConstants.TOP);
 			}
 		}
 		catch(Exception e)
@@ -144,6 +163,28 @@ public class GUIHandler implements MouseListener,ChangeListener,ActionListener
 		catch(Exception e)
 		{
 			System.err.println("Erreur lors de l'enregistrement d'une image");
+		}
+	}
+	@Override
+	public void mouseDragged(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void mouseMoved(MouseEvent arg0) {
+		// TODO Auto-generated method stub		
+		if(secondParamActivate)
+		{
+			if(image==null)return;
+			int posX=arg0.getX();
+			int posY=arg0.getY();
+			if(posX<image.getWidth() && posY<image.getHeight())
+			{
+				if(mousePressed)
+				{
+					System.out.println(arg0.getX()+"-"+arg0.getY());					
+				}
+			}
 		}
 	}
 }

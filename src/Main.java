@@ -20,6 +20,7 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.net.ssl.SSLEngineResult.HandshakeStatus;
 import javax.swing.*;
+import javax.swing.GroupLayout.Alignment;
 import javax.tools.JavaFileObject;
 import javax.xml.crypto.Data;
 
@@ -50,19 +51,19 @@ public class Main
 		GUIHandler gui=new GUIHandler(frame);
 		try
 		{
-			JLabel displayLabel=new JLabel();gui.setDisplayLabel(displayLabel);
+			JLabel displayLabel=new JLabel();gui.setDisplayLabel(displayLabel);displayLabel.addMouseListener(gui);displayLabel.addMouseMotionListener(gui);
 			JPanel paramPanel=new JPanel();
 			JScrollPane scrollDisplay=new JScrollPane(displayLabel);
 			JScrollPane scrollParam=new JScrollPane(paramPanel);
 			scrollDisplay.setPreferredSize(new Dimension(750,400));
 			scrollParam.setPreferredSize(new Dimension(550,400));
+			BoxLayout box=new BoxLayout(paramPanel, BoxLayout.Y_AXIS);
+			paramPanel.setLayout(box);
 			//Contenu du paramPanel
 			//first param
-			BoxLayout box=new BoxLayout(paramPanel, BoxLayout.Y_AXIS);
 			JPanel firstPanel=new JPanel();
 			BoxLayout firstParam=new BoxLayout(firstPanel,BoxLayout.X_AXIS);
 			firstPanel.setLayout(firstParam);
-			paramPanel.setLayout(box);
 			JButton btn_load=new JButton("Ouvrir");btn_load.setName("Ouvrir");
 			JButton btn_cam=new JButton("Camera");btn_cam.setName("Camera");
 			btn_load.addActionListener(gui);
@@ -71,7 +72,29 @@ public class Main
 			firstPanel.add(btn_cam);
 			//
 			//secod param
-			
+			JPanel secondPanel=new JPanel();secondPanel.setEnabled(false);
+			GroupLayout gr1=new GroupLayout(secondPanel);
+			gr1.setAutoCreateContainerGaps(true);
+			gr1.setAutoCreateGaps(true);
+			secondPanel.setLayout(gr1);
+			JCheckBox chk_second=new  JCheckBox("Activer filtre");chk_second.setName("ActiverFiltre");
+			chk_second.addChangeListener(gui);
+			JComboBox cbx_second=new JComboBox<>(new String[]{
+				"Moyenne","Mediane","Sharpening"	
+			});
+			JLabel lbl_second=new JLabel("Largeur du filtre:");
+			JSlider sld_second=new JSlider(JSlider.HORIZONTAL, 3, 21, 3);
+			JButton btn_second=new JButton("Appliquer");btn_second.setName("AppliquerFiltre");
+			btn_second.addActionListener(gui);
+			gr1.setHorizontalGroup(gr1.createSequentialGroup()
+					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(chk_second).addComponent(lbl_second))
+					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(cbx_second).addComponent(sld_second).addComponent(btn_second))
+					);
+			gr1.setVerticalGroup(gr1.createSequentialGroup()
+					.addGroup(gr1.createParallelGroup(Alignment.BASELINE).addComponent(chk_second).addComponent(cbx_second))
+					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(lbl_second).addComponent(sld_second))
+					.addComponent(btn_second)
+					);
 			//
 			//last param
 			JPanel lastPanel=new JPanel();
@@ -84,50 +107,11 @@ public class Main
 			//
 			//Ajouter tous les param child panel au param panel 
 			paramPanel.add(firstPanel);
+			paramPanel.add(secondPanel);
 			paramPanel.add(lastPanel);
 			//
 			frame.add(scrollDisplay);
-			frame.add(scrollParam);
-			/*
-			GUIHandler gui=new GUIHandler();
-			JButton btn=new JButton("Take picture");
-			btn.addMouseListener(gui);
-			JCheckBox mirrorCheck=new JCheckBox("Mirror effect");
-			mirrorCheck.setName("mirrorCheck");
-			mirrorCheck.addChangeListener(gui);
-			mirrorCheck.setSelected(false);
-			JLabel labelImage=new JLabel();	
-			JScrollPane scroll=new JScrollPane(labelImage);
-			
-			scroll.setPreferredSize(new Dimension(500, 400));
-			frame.add(scroll);
-			frame.add(mirrorCheck);
-			frame.add(btn);
-			frame.setVisible(true);
-			VideoCapture capture=new VideoCapture();
-			capture.open(0);
-			if(!capture.isOpened())
-			{
-				System.err.println("cannot open cam device");
-				return;
-			}
-			Mat fps=new Mat();
-			capture.set(Videoio.CAP_PROP_FRAME_WIDTH,640);
-			capture.set(Videoio.CAP_PROP_FRAME_HEIGHT,480);
-			Mat rt;
-			while(capture.read(fps))
-			{		
-				if(mirrorCheck.isSelected())fps=MirrorImage(fps);
-				rt=RotateImage(fps, Math.PI/2);
-				BufferedImage image=convertCVToTile(rt);
-				labelImage.setIcon(new ImageIcon(image));
-				if(gui.Clicked)
-				{
-					gui.Clicked=false;
-					saveImage(image, "profil");
-				}
-			}
-			capture.release();*/
+			frame.add(scrollParam);			
 		}
 		catch(Exception e)
 		{

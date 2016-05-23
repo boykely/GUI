@@ -38,7 +38,6 @@ public class CamDialog extends JFrame implements Runnable,WindowListener,ActionL
 		mainFrame=frame;
 		mainLabel=target;
 		btn_take=new JButton("Prendre photos");btn_take.setName("pic");
-		imageLabel=new JLabel(new ImageIcon(ImageIO.read(new File("C:\\Users\\valimo\\Desktop\\Synthèses images\\stage\\XLIM\\project\\TestImageScroll\\agents.jpg"))));
 		scroll=new JScrollPane(imageLabel);
 		scroll.setPreferredSize(new Dimension(600,500));
 		setLayout(new FlowLayout(FlowLayout.LEFT));
