@@ -4,14 +4,20 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 
 public class UtilsOpenCV 
 {
+	public static enum Filter
+	{
+		Moyenne,Mediane,Gauss,Simple		
+	}
 	public static void saveImage(BufferedImage image,String path)
 	{
 		String dir="C:\\Users\\valimo\\Desktop\\";
@@ -79,5 +85,12 @@ public class UtilsOpenCV
 			}
 		}
 		return image;
+	}
+	public static void localFilter(BufferedImage image,List<Point> targetPixels,Dimension dim,Filter type)
+	{
+		if(type==Filter.Simple)
+		{
+			
+		}
 	}
 }

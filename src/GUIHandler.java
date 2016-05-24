@@ -8,6 +8,10 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -25,6 +29,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 
 public class GUIHandler implements MouseListener,MouseMotionListener, ChangeListener,ActionListener
 {
@@ -37,10 +42,12 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	private boolean secondParamActivate=false;
 	private boolean mousePressed=false;
 	private boolean pickColor=false;
+	private List<Point> targetPixels;
 	
 	public GUIHandler(JFrame frame)
 	{
 		mainFrame=frame;
+		targetPixels=new ArrayList<>();
 	}
 	public void setDisplayLabel(JLabel lbl)
 	{
@@ -49,6 +56,17 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	public void setLabelPickColor(JLabel lbl)
 	{
 		labelPickColor=lbl;
+	}
+	private void pickColorFromImage(MouseEvent e)
+	{
+		ImageIcon ico=(ImageIcon)displayLabel.getIcon();
+		if(labelPickColor==null || image==null)return;
+		image=(BufferedImage)(ico.getImage());
+		int col=e.getX();
+		int ligne=e.getY();
+		if(col>image.getWidth() || ligne>image.getHeight())return;
+		int color=image.getRGB(col, ligne);
+		labelPickColor.setIcon(new ImageIcon(UtilsOpenCV.fillSquareColor(color, new Dimension(35,35))));
 	}
 	@Override
 	public void mouseClicked(MouseEvent e) {
@@ -60,14 +78,7 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 			 * après capture cam la référence image n'est plus à jour => il faut utiliser event pour contourner ce problème
 			 * par contre après ouverture d'image par séléction de fichier la référence est mise à jour
 			 */
-			ImageIcon ico=(ImageIcon)displayLabel.getIcon();
-			if(labelPickColor==null || image==null)return;
-			image=(BufferedImage)(ico.getImage());
-			int col=e.getX();
-			int ligne=e.getY();
-			if(col>image.getWidth() || ligne>image.getHeight())return;
-			int color=image.getRGB(col, ligne);
-			labelPickColor.setIcon(new ImageIcon(UtilsOpenCV.fillSquareColor(color, new Dimension(35,35))));
+			pickColorFromImage(e);
 		}
 	}
 
@@ -156,6 +167,7 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 			dlg=new JFileChooser();dlg.setMultiSelectionEnabled(false);
 			FileFilter filter=new FileNameExtensionFilter("Image (jpeg,png))","jpg","png","jpeg","PNG");
 			dlg.setFileFilter(filter);
+			
 			int res=dlg.showOpenDialog(mainFrame);
 			if(res==JFileChooser.APPROVE_OPTION)
 			{
@@ -207,7 +219,8 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 				displayLabel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 				if(mousePressed)
 				{
-					System.out.println(arg0.getX()+"-"+arg0.getY());
+					fillTargetPixels(arg0);
+					UtilsOpenCV.localFilter(image, targetPixels, new Dimension(15,15), UtilsOpenCV.Filter.Simple);
 				}
 			}
 			else
@@ -233,5 +246,9 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 				displayLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		}
+	}
+	private void fillTargetPixels(MouseEvent e)
+	{
+		targetPixels.add(new Point(e.getY(), e.getX()));
 	}
 }

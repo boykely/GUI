@@ -1,8 +1,11 @@
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -10,6 +13,9 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 import java.nio.Buffer;
+import java.nio.file.FileStore;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
@@ -36,9 +42,8 @@ import org.opencv.videoio.Videoio;
 public class Main 
 {
 	public static int gl=0;
-	public static void main(String[] args)
+	public static void main(String[] args) throws HeadlessException, IndexOutOfBoundsException, IOException
 	{
-		
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);		
 		JFrame frame=new JFrame("Traitement d'images");
 		frame.setResizable(false);
