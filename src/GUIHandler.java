@@ -1,5 +1,6 @@
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -32,8 +33,10 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	private JFileChooser dlg;
 	private JFrame mainFrame;
 	private JLabel displayLabel;
+	private JLabel labelPickColor;
 	private boolean secondParamActivate=false;
 	private boolean mousePressed=false;
+	private boolean pickColor=false;
 	
 	public GUIHandler(JFrame frame)
 	{
@@ -43,10 +46,29 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	{
 		displayLabel=lbl;
 	}
+	public void setLabelPickColor(JLabel lbl)
+	{
+		labelPickColor=lbl;
+	}
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
 		Clicked=!Clicked;
+		if(pickColor)
+		{
+			/*
+			 * après capture cam la référence image n'est plus à jour => il faut utiliser event pour contourner ce problème
+			 * par contre après ouverture d'image par séléction de fichier la référence est mise à jour
+			 */
+			ImageIcon ico=(ImageIcon)displayLabel.getIcon();
+			if(labelPickColor==null || image==null)return;
+			image=(BufferedImage)(ico.getImage());
+			int col=e.getX();
+			int ligne=e.getY();
+			if(col>image.getWidth() || ligne>image.getHeight())return;
+			int color=image.getRGB(col, ligne);
+			labelPickColor.setIcon(new ImageIcon(UtilsOpenCV.fillSquareColor(color, new Dimension(35,35))));
+		}
 	}
 
 	@Override
@@ -90,6 +112,10 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 			{
 				displayLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}			
+		}
+		if(chk.getName()=="ActivePickColor")
+		{
+			pickColor=!pickColor;
 		}
 	}
 

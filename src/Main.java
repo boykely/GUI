@@ -86,15 +86,21 @@ public class Main
 			});
 			JLabel lbl_second=new JLabel("Largeur du filtre:");
 			JSlider sld_second=new JSlider(JSlider.HORIZONTAL, 3, 21, 3);
+			JLabel lbl_second_col=new JLabel();lbl_second_col.setBorder(BorderFactory.createLineBorder(new Color(0,0,0)));
+			gui.setLabelPickColor(lbl_second_col);
+			lbl_second_col.setIcon(new ImageIcon(UtilsOpenCV.fillSquareColor(new Color(0,0,0), new Dimension(35,35))));
+			JCheckBox chk_second_pick=new JCheckBox("Activer Pick Color");chk_second_pick.setName("ActivePickColor");
+			chk_second_pick.addChangeListener(gui);
 			JButton btn_second=new JButton("Appliquer");btn_second.setName("AppliquerFiltre");
 			btn_second.addActionListener(gui);
 			gr1.setHorizontalGroup(gr1.createSequentialGroup()
-					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(chk_second).addComponent(lbl_second))
-					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(cbx_second).addComponent(sld_second).addComponent(btn_second))
+					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(chk_second).addComponent(lbl_second).addComponent(chk_second_pick))
+					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(cbx_second).addComponent(sld_second).addComponent(lbl_second_col).addComponent(btn_second))
 					);
 			gr1.setVerticalGroup(gr1.createSequentialGroup()
 					.addGroup(gr1.createParallelGroup(Alignment.BASELINE).addComponent(chk_second).addComponent(cbx_second))
 					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(lbl_second).addComponent(sld_second))
+					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(chk_second_pick).addComponent(lbl_second_col))
 					.addComponent(btn_second)
 					);
 			//

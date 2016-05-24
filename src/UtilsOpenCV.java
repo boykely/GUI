@@ -1,3 +1,5 @@
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
@@ -53,5 +55,29 @@ public class UtilsOpenCV
 	{		
 		int i=(b+128)+128;		
 		return b>=0?(int)b:i;
+	}
+	public static BufferedImage fillSquareColor(Color col,Dimension dim)
+	{
+		BufferedImage image=new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_3BYTE_BGR);
+		for(int i=0;i<dim.getHeight();i++)
+		{
+			for(int j=0;j<dim.getWidth();j++)
+			{
+				image.setRGB(j, i, col.getRGB());
+			}
+		}
+		return image;
+	}
+	public static BufferedImage fillSquareColor(int col,Dimension dim)
+	{
+		BufferedImage image=new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_3BYTE_BGR);
+		for(int i=0;i<dim.getHeight();i++)
+		{
+			for(int j=0;j<dim.getWidth();j++)
+			{
+				image.setRGB(j, i, col);
+			}
+		}
+		return image;
 	}
 }
