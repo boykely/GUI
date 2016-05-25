@@ -97,16 +97,19 @@ public class Main
 			JCheckBox chk_second_pick=new JCheckBox("Activer Pick Color");chk_second_pick.setName("ActivePickColor");
 			chk_second_pick.addChangeListener(gui);
 			JButton btn_second=new JButton("Appliquer");btn_second.setName("AppliquerFiltre");
+			JButton btn_second_reset=new JButton("Reset");btn_second_reset.setName("Reset");
 			btn_second.addActionListener(gui);
+			btn_second_reset.addActionListener(gui);
 			gr1.setHorizontalGroup(gr1.createSequentialGroup()
 					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(chk_second).addComponent(lbl_second).addComponent(chk_second_pick))
 					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(cbx_second).addComponent(sld_second).addComponent(lbl_second_col).addComponent(btn_second))
+					.addComponent(btn_second_reset)
 					);
 			gr1.setVerticalGroup(gr1.createSequentialGroup()
 					.addGroup(gr1.createParallelGroup(Alignment.BASELINE).addComponent(chk_second).addComponent(cbx_second))
 					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(lbl_second).addComponent(sld_second))
 					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(chk_second_pick).addComponent(lbl_second_col))
-					.addComponent(btn_second)
+					.addGroup(gr1.createParallelGroup(Alignment.LEADING).addComponent(btn_second).addComponent(btn_second_reset))
 					);
 			//
 			//last param

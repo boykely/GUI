@@ -31,10 +31,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
-public class GUIHandler implements MouseListener,MouseMotionListener, ChangeListener,ActionListener
+public class GUIHandler implements MouseListener,MouseMotionListener, ChangeListener,ActionListener,ImageLoadedListener
 {
 	public boolean Clicked=false;
 	public BufferedImage image;
+	private BufferedImage resetImage; 
 	private JFileChooser dlg;
 	private JFrame mainFrame;
 	private JLabel displayLabel;
@@ -59,9 +60,6 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	}
 	private void pickColorFromImage(MouseEvent e)
 	{
-		ImageIcon ico=(ImageIcon)displayLabel.getIcon();
-		if(labelPickColor==null || image==null)return;
-		image=(BufferedImage)(ico.getImage());
 		int col=e.getX();
 		int ligne=e.getY();
 		if(col>image.getWidth() || ligne>image.getHeight())return;
@@ -74,10 +72,6 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 		Clicked=!Clicked;
 		if(pickColor)
 		{
-			/*
-			 * après capture cam la référence image n'est plus à jour => il faut utiliser event pour contourner ce problème
-			 * par contre après ouverture d'image par séléction de fichier la référence est mise à jour
-			 */
 			pickColorFromImage(e);
 		}
 	}
@@ -143,6 +137,7 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 			try
 			{
 				CamDialog cam=new CamDialog(mainFrame,displayLabel);
+				cam.addImageLoadedListener(this);
 				Thread th=new Thread(cam);
 				th.start();
 			}
@@ -153,7 +148,11 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 		}
 		if(btn.getName()=="AppliquerFiltre")
 		{
-			
+			if(targetPixels.size()!=0)UtilsOpenCV.localFilter(image, targetPixels, new Dimension(15,15), UtilsOpenCV.Filter.Simple);
+		}
+		if(btn.getName()=="Reset")
+		{
+			if(resetImage!=null)displayLabel.setIcon(new ImageIcon(resetImage));
 		}
 		if(btn.getName()=="Enregistrer")
 		{
@@ -173,6 +172,7 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 			{
 				File f=dlg.getSelectedFile();
 				image=ImageIO.read(f);
+				resetImage=ImageIO.read(f);
 				displayLabel.setIcon(new ImageIcon(image));
 				displayLabel.setVerticalAlignment(SwingConstants.TOP);
 			}
@@ -220,7 +220,6 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 				if(mousePressed)
 				{
 					fillTargetPixels(arg0);
-					UtilsOpenCV.localFilter(image, targetPixels, new Dimension(15,15), UtilsOpenCV.Filter.Simple);
 				}
 			}
 			else
@@ -250,5 +249,13 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	private void fillTargetPixels(MouseEvent e)
 	{
 		targetPixels.add(new Point(e.getY(), e.getX()));
+	}
+	@Override
+	public void ImageLoaded(ImageLoadedEvent evt) {
+		// TODO Auto-generated method stub
+		System.out.println("image loader");
+		image=evt.getImage();
+		resetImage=evt.getImage();
+		displayLabel.setIcon(new ImageIcon(image));
 	}
 }

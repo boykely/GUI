@@ -8,6 +8,9 @@ import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -32,11 +35,14 @@ public class CamDialog extends JFrame implements Runnable,WindowListener,ActionL
 	private JButton btn_take;
 	private VideoCapture capture;
 	private boolean takePic=false;
+	private List _ImageLoadedlisteners;
 	
 	public CamDialog(JFrame frame,JLabel target ) throws IOException
 	{
+		_ImageLoadedlisteners=new ArrayList<>();
 		mainFrame=frame;
 		mainLabel=target;
+		imageLabel=new JLabel();
 		btn_take=new JButton("Prendre photos");btn_take.setName("pic");
 		scroll=new JScrollPane(imageLabel);
 		scroll.setPreferredSize(new Dimension(600,500));
@@ -50,6 +56,23 @@ public class CamDialog extends JFrame implements Runnable,WindowListener,ActionL
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		addWindowListener(this);
 		btn_take.addActionListener(this);
+	}
+	public void addImageLoadedListener(ImageLoadedListener ill)
+	{
+		_ImageLoadedlisteners.add(ill);
+	}
+	public void removeImageLoadedListener(ImageLoadedListener ill)
+	{
+		_ImageLoadedlisteners.remove(ill);
+	}
+	public void LunchImageLoadedEvent(BufferedImage im)
+	{
+		ImageLoadedEvent e=new ImageLoadedEvent(this,im);
+		Iterator listeners = _ImageLoadedlisteners.iterator();
+        while( listeners.hasNext() ) 
+        {
+            ( (ImageLoadedListener) listeners.next() ).ImageLoaded(e);
+        }
 	}
 	private void initCamera()
 	{
@@ -68,8 +91,8 @@ public class CamDialog extends JFrame implements Runnable,WindowListener,ActionL
 			image=UtilsOpenCV.convertCVToTile(fps);
 			imageLabel.setIcon(new ImageIcon(image));
 			if(takePic)
-			{
-				mainLabel.setIcon(new ImageIcon(image));
+			{				
+				LunchImageLoadedEvent(image);
 				takePic=!takePic;
 			}
 		}
