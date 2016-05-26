@@ -90,7 +90,12 @@ public class Main
 				"Moyenne","Mediane","Sharpening"	
 			});
 			JLabel lbl_second=new JLabel("Largeur du filtre:");
-			JSlider sld_second=new JSlider(JSlider.HORIZONTAL, 3, 21, 3);
+			JSlider sld_second=new JSlider(JSlider.HORIZONTAL, 3, 25, 3);sld_second.setName("Kernel");
+			sld_second.addChangeListener(gui);
+			sld_second.setMajorTickSpacing(10);
+			sld_second.setMinorTickSpacing(2);
+			sld_second.setPaintTicks(true);
+			sld_second.setPaintLabels(true);
 			JLabel lbl_second_col=new JLabel();lbl_second_col.setBorder(BorderFactory.createLineBorder(new Color(0,0,0)));
 			gui.setLabelPickColor(lbl_second_col);
 			lbl_second_col.setIcon(new ImageIcon(UtilsOpenCV.fillSquareColor(new Color(0,0,0), new Dimension(35,35))));

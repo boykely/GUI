@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -21,6 +22,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.event.ChangeEvent;
@@ -44,11 +46,14 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	private boolean mousePressed=false;
 	private boolean pickColor=false;
 	private List<Point> targetPixels;
+	private int kernelSize;
+	private Color color;
 	
 	public GUIHandler(JFrame frame)
 	{
 		mainFrame=frame;
 		targetPixels=new ArrayList<>();
+		kernelSize=3;
 	}
 	public void setDisplayLabel(JLabel lbl)
 	{
@@ -63,16 +68,26 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 		int col=e.getX();
 		int ligne=e.getY();
 		if(col>image.getWidth() || ligne>image.getHeight())return;
-		int color=image.getRGB(col, ligne);
+		int c=image.getRGB(col, ligne);
+		color=new Color(c);
 		labelPickColor.setIcon(new ImageIcon(UtilsOpenCV.fillSquareColor(color, new Dimension(35,35))));
 	}
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		Clicked=!Clicked;
-		if(pickColor)
+		Object o=e.getSource();
+		if(o.getClass().getName()==JLabel.class.getName())
+		{
+			JLabel lbl=(JLabel)o;
+			if(lbl.getName()=="MainLabel" && image!=null)
+			{
+				fillTargetPixels(e);
+			}
+		}
+		if(pickColor && image!=null)
 		{
 			pickColorFromImage(e);
+			targetPixels.clear();
 		}
 	}
 
@@ -99,29 +114,47 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
 		Component comp=(Component)e.getComponent();
-		if(comp.getName()=="MainLabel" && secondParamActivate)mousePressed=false;
+		//if(comp.getName()=="MainLabel" && secondParamActivate)mousePressed=false;
 	}
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		// TODO Auto-generated method stub
-		JCheckBox chk=(JCheckBox)e.getSource();
-		if(chk.getName()=="ActiverFiltre")
+		Object o=e.getSource();
+		if(o.getClass().getName()==JCheckBox.class.getName())
 		{
-			secondParamActivate=!secondParamActivate;
-			if(secondParamActivate)
+			JCheckBox chk=(JCheckBox)o;
+			if(chk.getName()=="ActiverFiltre")
 			{
-				displayLabel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+				secondParamActivate=!secondParamActivate;
+				if(secondParamActivate)
+				{
+					displayLabel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+				}
+				else
+				{
+					displayLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				}			
 			}
-			else
+			if(chk.getName()=="ActivePickColor")
 			{
-				displayLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			}			
+				pickColor=!pickColor;
+			}
 		}
-		if(chk.getName()=="ActivePickColor")
+		if(o.getClass().getName()==JSlider.class.getName())
 		{
-			pickColor=!pickColor;
+			JSlider sld=(JSlider)o;
+			if(sld.getName()=="Kernel")
+			{
+				kernelSize=sld.getValue();
+				if(sld.getValue()%2==0)
+				{
+					kernelSize=sld.getValue()+1;
+					sld.setValue(kernelSize);
+				}
+			}
 		}
+		
 	}
 
 	@Override
@@ -148,11 +181,18 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 		}
 		if(btn.getName()=="AppliquerFiltre")
 		{
-			if(targetPixels.size()!=0)UtilsOpenCV.localFilter(image, targetPixels, new Dimension(15,15), UtilsOpenCV.Filter.Simple);
+			if(targetPixels.size()!=0 && image!=null)
+			{
+				UtilsOpenCV.localFilter(image, targetPixels, new Dimension(kernelSize,kernelSize),pickColor? UtilsOpenCV.Filter.Simple:UtilsOpenCV.Filter.Moyenne,color);
+				displayLabel.setIcon(new ImageIcon(image));
+			}
+			targetPixels.clear();
 		}
 		if(btn.getName()=="Reset")
 		{
 			if(resetImage!=null)displayLabel.setIcon(new ImageIcon(resetImage));
+			targetPixels.clear();
+			UpdateImageReference();
 		}
 		if(btn.getName()=="Enregistrer")
 		{
@@ -211,7 +251,11 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 		// TODO Auto-generated method stub
 		if(secondParamActivate)
 		{
-			if(image==null)return;
+			if(image==null)
+			{
+				System.out.println("image null");
+				return;
+			}
 			int posX=arg0.getX();
 			int posY=arg0.getY();
 			if(posX<image.getWidth() && posY<image.getHeight())
@@ -257,5 +301,10 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 		image=evt.getImage();
 		resetImage=evt.getImage();
 		displayLabel.setIcon(new ImageIcon(image));
+	}
+	private void UpdateImageReference()
+	{
+		image=(BufferedImage)((ImageIcon)displayLabel.getIcon()).getImage();
+		resetImage=(BufferedImage)((ImageIcon)displayLabel.getIcon()).getImage();
 	}
 }

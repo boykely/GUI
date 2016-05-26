@@ -38,7 +38,7 @@ public class UtilsOpenCV
 		byte[] data=((DataBufferByte)im.getRaster().getDataBuffer()).getData();
 		m.put(0, 0, data);
 		return m;
-	}	
+	}
 	public static BufferedImage convertCVToTile(Mat im)
 	{
 		BufferedImage image=new BufferedImage(im.cols(), im.rows(), BufferedImage.TYPE_3BYTE_BGR);
@@ -48,6 +48,12 @@ public class UtilsOpenCV
 		im.get(0, 0,src);
 		System.arraycopy(src, 0, dest, 0,taille );
 		return image;
+	}
+	public static void convertCVToTile(Mat im,BufferedImage image)
+	{
+		byte[] dst=((DataBufferByte)image.getRaster().getDataBuffer()).getData();
+		im.get(0, 0,dst);
+		
 	}
 	public static void copyBI(BufferedImage src,BufferedImage dest)
 	{
@@ -86,11 +92,85 @@ public class UtilsOpenCV
 		}
 		return image;
 	}
-	public static void localFilter(BufferedImage image,List<Point> targetPixels,Dimension dim,Filter type)
+	public static void localFilter(BufferedImage image,List<Point> targetPixels,Dimension dim,Filter type,Color color)
 	{
 		if(type==Filter.Simple)
 		{
-			
+			double alpha=0.75;
+			Mat im=convertTileToCV(image);
+			int[][] noyau=kernel(dim.height);
+			Point p;
+			byte[] pixel=new byte[3];
+			for(int z=0;z<targetPixels.size();z++)
+			{
+				p=targetPixels.get(z);
+				for(int k=0;k<noyau.length;k++)
+				{
+					int[] coord=noyau[k];
+					int i=(int)p.x+coord[0];
+					int j=(int)p.y+coord[1];
+					//on test chaque coordonnées maintenant
+					if(coord[0]<=0)
+					{
+						//on est dans la partie <0 du noyau
+						if(i<=0)
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					else
+					{
+						if(i>=im.rows())
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					if(coord[1]<=0)
+					{
+						if(j<=0)
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					else
+					{
+						if(j>=im.cols())
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					im.get(i, j,pixel);
+					double red=alpha*byteColorCVtoIntJava(pixel[2])+(1-alpha)*color.getRed();
+					double green=alpha*byteColorCVtoIntJava(pixel[1])+(1-alpha)*color.getGreen();
+					double blue=alpha*byteColorCVtoIntJava(pixel[0])+(1-alpha)*color.getBlue();
+					im.put(i, j,new byte[]{(byte)blue,(byte)green,(byte)red});
+				}
+			}
+			convertCVToTile(im, image);
 		}
+		else if(type==Filter.Moyenne)
+		{
+			System.out.println("filtre moyenne à traiter");
+		}
+	}
+	public static int[][] kernel(int n)
+	{
+		if(n%2==0)return null;
+		int[][] k=new int[n*n][];
+		int demi=(int)Math.round((double)n/2);
+		int z=0;
+		for(int i=-(demi-1);i<demi;i++)
+		{
+			for(int j=-(demi-1);j<demi;j++)
+			{
+				k[z]=new int[]{i,j};
+				z++;
+			}
+		}
+		return k;
 	}
 }
