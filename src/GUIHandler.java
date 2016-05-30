@@ -18,6 +18,7 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -32,6 +33,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+
 
 public class GUIHandler implements MouseListener,MouseMotionListener, ChangeListener,ActionListener,ImageLoadedListener
 {
@@ -48,12 +50,14 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	private List<Point> targetPixels;
 	private int kernelSize;
 	private Color color;
+	private UtilsOpenCV.Filter filterType;
 	
 	public GUIHandler(JFrame frame)
 	{
 		mainFrame=frame;
 		targetPixels=new ArrayList<>();
 		kernelSize=3;
+		filterType=UtilsOpenCV.Filter.PickColor;
 	}
 	public void setDisplayLabel(JLabel lbl)
 	{
@@ -141,7 +145,7 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 				pickColor=!pickColor;
 			}
 		}
-		if(o.getClass().getName()==JSlider.class.getName())
+		else if(o.getClass().getName()==JSlider.class.getName())
 		{
 			JSlider sld=(JSlider)o;
 			if(sld.getName()=="Kernel")
@@ -160,43 +164,60 @@ public class GUIHandler implements MouseListener,MouseMotionListener, ChangeList
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
-		JButton btn=(JButton)e.getSource();
-		if(btn.getName()=="Ouvrir")
+		Object o=e.getSource();
+		if(o.getClass().getName()==JButton.class.getName())
 		{
-			openImage();
-		}
-		if(btn.getName()=="Camera")
-		{
-			try
+			JButton btn=(JButton)o;
+			if(btn.getName()=="Ouvrir")
 			{
-				CamDialog cam=new CamDialog(mainFrame,displayLabel);
-				cam.addImageLoadedListener(this);
-				Thread th=new Thread(cam);
-				th.start();
+				openImage();
 			}
-			catch(Exception ex)
+			if(btn.getName()=="Camera")
 			{
-				System.err.println("Erreur lors de la cam");
+				try
+				{
+					CamDialog cam=new CamDialog(mainFrame,displayLabel);
+					cam.addImageLoadedListener(this);
+					Thread th=new Thread(cam);
+					th.start();
+				}
+				catch(Exception ex)
+				{
+					System.err.println("Erreur lors de la cam");
+				}
 			}
-		}
-		if(btn.getName()=="AppliquerFiltre")
-		{
-			if(targetPixels.size()!=0 && image!=null)
+			if(btn.getName()=="AppliquerFiltre")
 			{
-				UtilsOpenCV.localFilter(image, targetPixels, new Dimension(kernelSize,kernelSize),pickColor? UtilsOpenCV.Filter.Simple:UtilsOpenCV.Filter.Moyenne,color);
-				displayLabel.setIcon(new ImageIcon(image));
+				if(targetPixels.size()!=0 && image!=null)
+				{
+					UtilsOpenCV.localFilter(image, targetPixels, new Dimension(kernelSize,kernelSize),filterType,color);
+					displayLabel.setIcon(new ImageIcon(image));
+				}
+				targetPixels.clear();
 			}
-			targetPixels.clear();
+			if(btn.getName()=="Reset")
+			{
+				if(resetImage!=null)displayLabel.setIcon(new ImageIcon(resetImage));
+				targetPixels.clear();
+				UpdateImageReference();
+			}
+			if(btn.getName()=="Enregistrer")
+			{
+				saveImage();
+			}
 		}
-		if(btn.getName()=="Reset")
+		else if(o.getClass().getName()==JComboBox.class.getName())
 		{
-			if(resetImage!=null)displayLabel.setIcon(new ImageIcon(resetImage));
-			targetPixels.clear();
-			UpdateImageReference();
-		}
-		if(btn.getName()=="Enregistrer")
-		{
-			saveImage();
+			JComboBox cb=(JComboBox)o;
+			if(cb.getName()=="SelectFilter")
+			{
+				String selected=(String)cb.getSelectedItem();
+				if(selected=="Pick Color")filterType=UtilsOpenCV.Filter.PickColor;
+				else if(selected=="Moyenne")filterType=UtilsOpenCV.Filter.Moyenne;
+				else if(selected=="Mediane")filterType=UtilsOpenCV.Filter.Mediane;
+				else if(selected=="Sharpening")filterType=UtilsOpenCV.Filter.Sharpening;
+				else if(selected=="Gaussian")filterType=UtilsOpenCV.Filter.Gauss;
+			}
 		}
 	}
 	private void openImage()

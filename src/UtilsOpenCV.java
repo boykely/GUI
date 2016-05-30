@@ -16,7 +16,7 @@ public class UtilsOpenCV
 {
 	public static enum Filter
 	{
-		Moyenne,Mediane,Gauss,Simple		
+		PickColor,Moyenne,Mediane,Gauss,Sharpening	
 	}
 	public static void saveImage(BufferedImage image,String path)
 	{
@@ -94,11 +94,13 @@ public class UtilsOpenCV
 	}
 	public static void localFilter(BufferedImage image,List<Point> targetPixels,Dimension dim,Filter type,Color color)
 	{
-		if(type==Filter.Simple)
+		Mat im=convertTileToCV(image);
+		int[][] noyau=kernel(dim.height);
+		int size=dim.height*dim.width;
+		double red=0,green=0,blue=0;
+		if(type==Filter.PickColor)
 		{
-			double alpha=0.75;
-			Mat im=convertTileToCV(image);
-			int[][] noyau=kernel(dim.height);
+			System.out.println("pickcolor");
 			Point p;
 			byte[] pixel=new byte[3];
 			for(int z=0;z<targetPixels.size();z++)
@@ -144,9 +146,9 @@ public class UtilsOpenCV
 						}
 					}
 					im.get(i, j,pixel);
-					double red=alpha*byteColorCVtoIntJava(pixel[2])+(1-alpha)*color.getRed();
-					double green=alpha*byteColorCVtoIntJava(pixel[1])+(1-alpha)*color.getGreen();
-					double blue=alpha*byteColorCVtoIntJava(pixel[0])+(1-alpha)*color.getBlue();
+					red=color.getRed();
+					green=color.getGreen();
+					blue=color.getBlue();
 					im.put(i, j,new byte[]{(byte)blue,(byte)green,(byte)red});
 				}
 			}
@@ -155,6 +157,115 @@ public class UtilsOpenCV
 		else if(type==Filter.Moyenne)
 		{
 			System.out.println("filtre moyenne à traiter");
+			Point p;
+			byte[] pixel=new byte[3];
+			for(int z=0;z<targetPixels.size();z++)
+			{
+				p=targetPixels.get(z);
+				for(int k=0;k<noyau.length;k++)
+				{
+					int[] coord=noyau[k];
+					int i=(int)p.x+coord[0];
+					int j=(int)p.y+coord[1];
+					//on test chaque coordonnées maintenant
+					if(coord[0]<=0)
+					{
+						//on est dans la partie <0 du noyau
+						if(i<=0)
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					else
+					{
+						if(i>=im.rows())
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					if(coord[1]<=0)
+					{
+						if(j<=0)
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					else
+					{
+						if(j>=im.cols())
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					im.get(i, j,pixel);
+					red+=byteColorCVtoIntJava(pixel[2]);
+					green+=byteColorCVtoIntJava(pixel[1]);
+					blue+=byteColorCVtoIntJava(pixel[0]);
+					//im.put(i, j,new byte[]{(byte)blue,(byte)green,(byte)red});
+				}
+				//on répasse la boucle pour re assigner les voisins
+				red/=size;
+				green/=size;
+				blue/=size;
+				for(int k=0;k<noyau.length;k++)
+				{
+					int[] coord=noyau[k];
+					int i=(int)p.x+coord[0];
+					int j=(int)p.y+coord[1];
+					//on test chaque coordonnées maintenant
+					if(coord[0]<=0)
+					{
+						//on est dans la partie <0 du noyau
+						if(i<=0)
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					else
+					{
+						if(i>=im.rows())
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					if(coord[1]<=0)
+					{
+						if(j<=0)
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					else
+					{
+						if(j>=im.cols())
+						{
+							i=(int)p.x;
+							j=(int)p.y;
+						}
+					}
+					im.put(i, j,new byte[]{(byte)blue,(byte)green,(byte)red});
+				}
+			}
+			convertCVToTile(im, image);
+		}
+		else if(type==Filter.Gauss)
+		{
+			System.out.println("filtre gauss à traiter");
+		}
+		else if(type==Filter.Mediane)
+		{
+			System.out.println("filtre Mediane à traiter");
+		}
+		else if(type==Filter.Sharpening)
+		{
+			System.out.println("filtre passe haute à traiter");
 		}
 	}
 	public static int[][] kernel(int n)

@@ -87,8 +87,10 @@ public class Main
 			JCheckBox chk_second=new  JCheckBox("Activer filtre");chk_second.setName("ActiverFiltre");
 			chk_second.addChangeListener(gui);
 			JComboBox cbx_second=new JComboBox<>(new String[]{
-				"Moyenne","Mediane","Sharpening"	
+				"Pick Color","Moyenne","Mediane","Gaussian","Sharpening"	
 			});
+			cbx_second.setName("SelectFilter");
+			cbx_second.addActionListener(gui);
 			JLabel lbl_second=new JLabel("Largeur du filtre:");
 			JSlider sld_second=new JSlider(JSlider.HORIZONTAL, 3, 25, 3);sld_second.setName("Kernel");
 			sld_second.addChangeListener(gui);
